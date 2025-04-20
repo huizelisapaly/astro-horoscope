@@ -1,3 +1,5 @@
+import cheerio from 'cheerio'; // LET OP: nodig om HTML te parsen
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).end();
@@ -5,7 +7,7 @@ export default async function handler(req, res) {
 
   const { date, time, place } = req.body;
 
-  // Locatie ophalen
+  // Locatie ophalen (lat/lon)
   const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(place)}&format=json&limit=1`);
   const locations = await response.json();
 
@@ -13,40 +15,47 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: 'Plaats niet gevonden' });
   }
 
-  const lat = parseFloat(locations[0].lat);
-  const lon = parseFloat(locations[0].lon);
+  const lat = locations[0].lat;
+  const lon = locations[0].lon;
 
   // Datum en tijd splitsen
   const [year, month, day] = date.split('-').map(Number);
   const [hour, minute] = time.split(':').map(Number);
 
-  // Request naar Astronapi sturen
-  const astroResponse = await fetch('https://api.astronapi.com/api/v1/planets', {
+  // Maak een formulier-achtige request naar AstroSeek
+  const formData = new URLSearchParams();
+  formData.append('inputyear', year);
+  formData.append('inputmonth', month);
+  formData.append('inputday', day);
+  formData.append('inputhour', hour);
+  formData.append('inputmin', minute);
+  formData.append('inputcity', place);
+  formData.append('inputlon', lon);
+  formData.append('inputlat', lat);
+
+  const astroResponse = await fetch('https://horoscopes.astro-seek.com/birth-chart-horoscope-online', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      day,
-      month,
-      year,
-      hour,
-      minute,
-      latitude: lat,
-      longitude: lon,
-      timezone: 1 // Nederland tijdzone
-    })
+    body: formData
   });
 
-  const astroData = await astroResponse.json();
+  const html = await astroResponse.text();
+  const $ = cheerio.load(html);
 
-  // Verstuur alles terug naar frontend
+  // Hier moeten we slim zoeken naar Zon, Maan, Ascendant info
+  // (ik maak nu alvast een basis, maar ik check daarna nog hoe AstroSeek de pagina structureert)
+
+  const sunSign = $('td:contains("Sun")').next().text().trim();
+  const moonSign = $('td:contains("Moon")').next().text().trim();
+  const ascendantSign = $('td:contains("Ascendant")').next().text().trim();
+
   res.status(200).json({
     date,
     time,
     place,
     latitude: lat,
     longitude: lon,
-    astroData
+    sunSign,
+    moonSign,
+    ascendantSign
   });
 }
