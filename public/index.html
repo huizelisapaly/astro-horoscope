@@ -1,7 +1,30 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Geboortehoroscoop Ontvangen</title>
+</head>
+<body>
+  <h1>Ontvang jouw geboortehoroscoop</h1>
+
+  <form id="birthForm">
+    <label>Geboortedatum:</label><br>
+    <input type="date" id="birthDate" required><br><br>
+
+    <label>Geboortetijd:</label><br>
+    <input type="time" id="birthTime" required><br><br>
+
+    <label>Geboorteplaats:</label><br>
+    <input type="text" id="birthPlace" placeholder="Bijv. Arnhem" required><br><br>
+
+    <button type="submit">Bereken</button>
+  </form>
+
+  <pre id="result"></pre>
+
 <script>
 document.getElementById('birthForm').addEventListener('submit', async function(e) {
   e.preventDefault();
-  
   const birthDate = document.getElementById('birthDate').value;
   const birthTime = document.getElementById('birthTime').value;
   const birthPlace = document.getElementById('birthPlace').value;
@@ -13,33 +36,9 @@ document.getElementById('birthForm').addEventListener('submit', async function(e
   });
 
   const data = await response.json();
-  
-  // Uitleg per zonneteken
-  const sunSignDescriptions = {
-    "Ram": "Je bent energiek, moedig en gaat altijd recht op je doel af.",
-    "Stier": "Je bent stabiel, betrouwbaar en geniet van de mooie dingen in het leven.",
-    "Tweelingen": "Je bent nieuwsgierig, communicatief en altijd op zoek naar nieuwe kennis.",
-    "Kreeft": "Je bent gevoelig, zorgzaam en sterk verbonden met familie en thuis.",
-    "Leeuw": "Je bent creatief, trots en straalt natuurlijk leiderschap uit.",
-    "Maagd": "Je bent analytisch, behulpzaam en hebt oog voor detail.",
-    "Weegschaal": "Je bent diplomatiek, sociaal en streeft naar harmonie en balans.",
-    "Schorpioen": "Je bent intens, gepassioneerd en niet bang om diep te graven.",
-    "Boogschutter": "Je bent optimistisch, avontuurlijk en filosofisch ingesteld.",
-    "Steenbok": "Je bent ambitieus, verantwoordelijk en werkt hard aan je doelen.",
-    "Waterman": "Je bent vernieuwend, idealistisch en denkt vooruitstrevend.",
-    "Vissen": "Je bent dromerig, empathisch en creatief verbonden met het grotere geheel."
-  };
-
-  const sunSign = data.sunSign;
-  const description = sunSignDescriptions[sunSign] || "Geen beschrijving beschikbaar.";
-
-  document.getElementById('result').innerHTML = `
-    <h2>Jouw Geboortehoroscoop</h2>
-    <p><strong>Geboortedatum:</strong> ${data.date}</p>
-    <p><strong>Geboortetijd:</strong> ${data.time}</p>
-    <p><strong>Geboorteplaats:</strong> ${data.place}</p>
-    <p><strong>Zonneteken:</strong> ${sunSign}</p>
-    <p><strong>Uitleg:</strong> ${description}</p>
-  `;
+  document.getElementById('result').innerText = JSON.stringify(data, null, 2);
 });
 </script>
+
+</body>
+</html>
